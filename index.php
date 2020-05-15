@@ -1,5 +1,6 @@
 <?php
 use App\NumberHelper;
+define('PER_PAGE',20);
 
 require 'vendor/autoload.php';
 $pdo= new PDO("sqlite:./products.db", null, null, [
@@ -8,6 +9,7 @@ $pdo= new PDO("sqlite:./products.db", null, null, [
 ]);
 
 $query = "SELECT * FROM products";
+$queryCount ="SELECT COUNT(id) as count FROM products";
 $params = [];
 
 //search by city
@@ -16,13 +18,18 @@ if(!empty($_GET['q'])){
     $params['city'] = '%' . $_GET['q'] . '%';
 }
 
-$query .= " LIMIT 20";
+$query .= " LIMIT " . PER_PAGE;
 
 $statement = $pdo->prepare($query);
 $statement->execute($params);
 $products = $statement->fetchAll();
 //dd($products);
 
+$statement = $pdo->prepare($queryCount);
+$statement->execute();
+$count = $statement->fetch()['count'];
+$pages = ceil($count / PER_PAGE);
+//dd($pages);
 ?>
 
 <!DOCTYPE html>
@@ -39,8 +46,7 @@ $products = $statement->fetchAll();
     <form action="" class="mb-4">
         <div class="form-group">
             <!-- name="q" give a search information for seo-->
-            <input type="text" class="form-control" name="q" placeholder="search by city">
-
+            <input type="text" class="form-control" name="q" placeholder="search by city" value="<?= htmlentities($_GET['q'] ?? null) ?>">
         </div>
         <button class="btn btn-primary">Search</button>
 
@@ -67,4 +73,7 @@ $products = $statement->fetchAll();
             <?php endforeach ?>
         </tbody>
     </table>
+    <?php if($pages > 1): ?>
+        <a href="?p=2" class="btn btn-primary">Next page</a>
+    <?php endif ?>
 </body>
