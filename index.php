@@ -18,7 +18,14 @@ if(!empty($_GET['q'])){
     $params['city'] = '%' . $_GET['q'] . '%';
 }
 
-$query .= " LIMIT " . PER_PAGE;
+//paging
+//default page is first page
+$page = (int)$_GET['p'] ?? 1;
+//current page -1 * x
+$offset = ($page - 1) * PER_PAGE;
+
+
+$query .= " LIMIT " . PER_PAGE . " OFFSET $offset";
 
 $statement = $pdo->prepare($query);
 $statement->execute($params);
@@ -73,7 +80,10 @@ $pages = ceil($count / PER_PAGE);
             <?php endforeach ?>
         </tbody>
     </table>
-    <?php if($pages > 1): ?>
-        <a href="?p=2" class="btn btn-primary">Next page</a>
+    <?php if($pages > 1 && $page > 1): ?>
+        <a href="?p=<?= $page - 1 ?>" class="btn btn-primary">Previous page</a>
+    <?php endif ?>
+    <?php if($pages > 1 && $page < $pages): ?>
+        <a href="?p=<?= $page + 1 ?>" class="btn btn-primary">Next page</a>
     <?php endif ?>
 </body>
