@@ -1,12 +1,26 @@
 <?php
+use App\NumberHelper;
 
 require 'vendor/autoload.php';
 $pdo= new PDO("sqlite:./products.db", null, null, [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
-$products = $pdo->query("SELECT * FROM products LIMIT 20")->fetchAll();
 
+$query = "SELECT * FROM products";
+$params = [];
+
+//search by city
+if(!empty($_GET['q'])){
+    $query .= " WHERE city LIKE :city";
+    $params['city'] = '%' . $_GET['q'] . '%';
+}
+
+$query .= " LIMIT 20";
+
+$statement = $pdo->prepare($query);
+$statement->execute($params);
+$products = $statement->fetchAll();
 //dd($products);
 
 ?>
@@ -21,6 +35,16 @@ $products = $pdo->query("SELECT * FROM products LIMIT 20")->fetchAll();
 </html>
 
 <body>
+    <h1>Real Estates</h1>
+    <form action="" class="mb-4">
+        <div class="form-group">
+            <!-- name="q" give a search information for seo-->
+            <input type="text" class="form-control" name="q" placeholder="search by city">
+
+        </div>
+        <button class="btn btn-primary">Search</button>
+
+    </form>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -36,7 +60,7 @@ $products = $pdo->query("SELECT * FROM products LIMIT 20")->fetchAll();
             <tr>
                 <td>#<?= $product['id'] ?></td>
                 <td><?= $product['name'] ?></td>
-                <td><?= Number::price($product['price']); ?></td>
+                <td><?= NumberHelper::price($product['price']); ?></td>
                 <td><?= $product['city'] ?></td>
                 <td><?= $product['address'] ?></td>
             </tr>
