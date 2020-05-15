@@ -1,4 +1,5 @@
 <?php
+use App\URLHelper;
 use App\NumberHelper;
 define('PER_PAGE',20);
 
@@ -15,12 +16,13 @@ $params = [];
 //search by city
 if(!empty($_GET['q'])){
     $query .= " WHERE city LIKE :city";
+    $queryCount .= " WHERE city LIKE :city";
     $params['city'] = '%' . $_GET['q'] . '%';
 }
 
 //paging
 //default page is first page
-$page = (int)$_GET['p'] ?? 1;
+$page = (int)($_GET['p'] ?? 1);
 //current page -1 * x
 $offset = ($page - 1) * PER_PAGE;
 
@@ -33,10 +35,13 @@ $products = $statement->fetchAll();
 //dd($products);
 
 $statement = $pdo->prepare($queryCount);
-$statement->execute();
+$statement->execute($params);
 $count = $statement->fetch()['count'];
+//know how many pages the list includes
 $pages = ceil($count / PER_PAGE);
-//dd($pages);
+//dd($count);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -80,10 +85,12 @@ $pages = ceil($count / PER_PAGE);
             <?php endforeach ?>
         </tbody>
     </table>
+    <!--Previous page-->
     <?php if($pages > 1 && $page > 1): ?>
-        <a href="?p=<?= $page - 1 ?>" class="btn btn-primary">Previous page</a>
+        <a href="?<?= URLHelper::withParam("p", $page - 1) ?>" class="btn btn-primary">Previous page</a>
     <?php endif ?>
+    <!--Next page-->
     <?php if($pages > 1 && $page < $pages): ?>
-        <a href="?p=<?= $page + 1 ?>" class="btn btn-primary">Next page</a>
+        <a href="?<?= URLHelper::withParam("p", $page + 1) ?>" class="btn btn-primary">Next page</a>
     <?php endif ?>
 </body>
