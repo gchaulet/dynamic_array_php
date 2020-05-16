@@ -6,3 +6,5 @@
 
 #Those filter changes are shown in url
 
+#Class in this example contains static functions
+
